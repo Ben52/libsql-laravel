@@ -2,11 +2,15 @@
 
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
+use Libsql\Laravel\Tests\Stress\StressTestCase;
 use Libsql\Laravel\Tests\TestCase;
 
 uses(
     TestCase::class,
-)->in(__DIR__);
+)->in('Feature', 'Unit');
+
+// The stress suite picks its connection from the LIBSQL_TEST_BACKEND env var.
+uses(StressTestCase::class)->in('Stress');
 
 function migrateTables(...$tableNames): void
 {

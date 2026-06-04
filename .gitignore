@@ -8,3 +8,6 @@ vendor/
 *.db
 tests/database/*
 !tests/database/.gitkeep
+
+# local stress-test credentials (never commit)
+.stress-creds.env
