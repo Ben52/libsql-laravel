@@ -173,10 +173,21 @@ class LibsqlDatabase
             $name = 'id';
         }
 
-        return isset($this->lastInsertIds[$name])
-            ? (string) $this->lastInsertIds[$name]
-            : $this->db->lastInsertId();
+        if (isset($this->lastInsertIds[$name])) {
+            return (string) $this->lastInsertIds[$name];
+        }
 
+        // Inside a transaction the insert runs on the transaction handle, and
+        // (over the remote/Hrana protocol) the base connection's
+        // connection_info does not reflect it. Read last_insert_rowid() on the
+        // active transaction so the inserted id is returned correctly.
+        if ($this->in_transaction && $this->tx !== null) {
+            $rows = $this->tx->query('select last_insert_rowid() as id')->fetchArray();
+
+            return (string) ($rows[0]['id'] ?? 0);
+        }
+
+        return (string) $this->db->lastInsertId();
     }
 
     public function escapeString($input)
