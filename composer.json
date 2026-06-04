@@ -13,7 +13,8 @@
     "require": {
         "turso/libsql": "^0.2.5",
         "illuminate/database": "^11.0|^12.0|^13.0",
-        "spatie/laravel-package-tools": "^1.16"
+        "spatie/laravel-package-tools": "^1.16",
+        "cweagans/composer-patches": "^1.7"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.64",
@@ -43,11 +44,18 @@
             "providers": [
                 "Libsql\\Laravel\\LibsqlServiceProvider"
             ]
+        },
+        "composer-exit-on-patch-failure": true,
+        "patches": {
+            "turso/libsql": {
+                "Fix CharBox crash on empty strings (zero-length pointer)": "patches/libsql-charbox-empty.patch"
+            }
         }
     },
     "config": {
         "allow-plugins": {
-            "pestphp/pest-plugin": true
+            "pestphp/pest-plugin": true,
+            "cweagans/composer-patches": true
         }
     }
 }

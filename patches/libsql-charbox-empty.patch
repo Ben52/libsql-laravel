@@ -1,0 +1,20 @@
+Fix CharBox crash on zero-length (empty) strings.
+
+`if ($str)` is falsy for an empty string '', so CharBox left an uninitialized
+pointer with len 0. The text path then passed that uninitialized pointer to
+libsql_text() (segfault) and the blob path computed `len - 1` = -1 = SIZE_MAX
+(Rust capacity-overflow abort). Inserting '' into any column killed the PHP
+process. Allocating for any non-null string (including '') fixes both paths.
+
+Upstream: https://github.com/tursodatabase/turso-php  (report me)
+--- a/src/CharBox.php
++++ b/src/CharBox.php
+@@ -19,7 +19,7 @@
+         $cStr = $ffi->new("char *");
+         $cLen = 0;
+
+-        if ($str) {
++        if ($str !== null) {
+             $cLen = strlen($str) + 1;
+             $cStr = $ffi->new($ffi::arrayType($ffi->type("char"), [$cLen]), owned: false);
+             $ffi::memcpy($cStr, $str, strlen($str));

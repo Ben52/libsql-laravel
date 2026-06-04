@@ -247,7 +247,7 @@ test('empty binary string round-trips correctly', function () {
     $row = DB::table('nb_blobs')->where('label', 'empty')->first();
 
     expect($row->data)->toBe('');
-})->group('stress')->skip('libsql FFI panics (capacity overflow) when binding an empty string to a binary column — package limitation');
+})->group('stress');
 
 test('plain ASCII binary data round-trips byte-for-byte', function () {
     $payload = 'Hello, binary world!';

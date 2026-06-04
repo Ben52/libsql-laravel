@@ -368,7 +368,7 @@ test('empty string matches between libSQL and PDO sqlite', function () {
     expect($lib)->toBe('', "libSQL empty string should be ''");
     expect($ref)->toBe('', "PDO empty string should be ''");
     expect($lib)->toBe($ref, 'libSQL vs PDO empty string mismatch');
-})->group('stress')->skip('libsql FFI panics (capacity overflow) when binding an empty string value — known package limitation');
+})->group('stress');
 
 // ---------------------------------------------------------------------------
 // Test 8: binary / blob parity
