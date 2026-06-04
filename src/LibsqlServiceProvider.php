@@ -54,7 +54,7 @@ class LibsqlServiceProvider extends PackageServiceProvider
                 $connector = new LibsqlConnector();
                 $db = $connector->connect($config);
 
-                $connection = new LibsqlConnection($db, $config['database'] ?? ':memory:', $config['prefix'], $config);
+                $connection = new LibsqlConnection($db, $config['database'] ?? ':memory:', $config['prefix'] ?? '', $config);
                 app()->instance(LibsqlConnection::class, $connection);
 
                 $connection->createReadPdo($config);

@@ -100,7 +100,7 @@ class LibsqlConnection extends Connection
         return array_shift($records);
     }
 
-    public function select($query, $bindings = [], $useReadPdo = true)
+    public function select($query, $bindings = [], $useReadPdo = true, array $fetchUsing = [])
     {
         $bindings = array_map(function ($binding) {
             return is_bool($binding) ? (int) $binding : $binding;
