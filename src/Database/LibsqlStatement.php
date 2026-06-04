@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Libsql\Laravel\Database;
 
-use Illuminate\Support\Carbon;
 use Libsql\Statement;
 use Libsql\Blob;
 
@@ -205,7 +204,7 @@ class LibsqlStatement
                 is_int($value) => 'integer',
                 is_bool($value) => 'boolean',
                 $value === null => 'null',
-                $value instanceof Carbon => 'datetime',
+                $value instanceof \DateTimeInterface => 'datetime',
                 is_vector($value) => 'vector',
                 default => 'text',
             };
@@ -219,7 +218,8 @@ class LibsqlStatement
             }
 
             if ($type === 'datetime') {
-                $value = $value->toDateTimeString();
+                // Covers Carbon, CarbonImmutable, and native DateTime(Immutable).
+                $value = $value->format('Y-m-d H:i:s');
             }
 
             if ($type === 'vector') {
