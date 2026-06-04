@@ -71,7 +71,7 @@ class LibsqlDatabase
 
         $mode = 'unknown';
 
-        if ($database === ':memory:' || empty($url)) {
+        if ($database === ':memory:' || (empty($database) && empty($url))) {
             $mode = 'memory';
         } elseif (empty($database) && !empty($url)) {
             $mode = 'remote';
