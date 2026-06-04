@@ -48,7 +48,7 @@
         "composer-exit-on-patch-failure": true,
         "patches": {
             "turso/libsql": {
-                "Fix CharBox crash on empty strings (zero-length pointer)": "patches/libsql-charbox-empty.patch"
+                "Fix CharBox crash on empty strings (zero-length pointer)": "https://raw.githubusercontent.com/Ben52/libsql-laravel/main/patches/libsql-charbox-empty.patch"
             }
         }
     },
