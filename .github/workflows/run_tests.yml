@@ -20,7 +20,7 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         php: [8.4, 8.3]
-        laravel: [11.*, 12.*]
+        laravel: [11.*, 12.*, 13.*]
         stability: [prefer-lowest, prefer-stable]
         include:
           - laravel: 11.*
@@ -29,6 +29,9 @@ jobs:
           - laravel: 12.*
             testbench: 10.*
             carbon: ^3.0
+          - laravel: 13.*
+            testbench: ^11.0
+            carbon: ^3
 
     name: P${{ matrix.php }} - L${{ matrix.laravel }} - ${{ matrix.stability }} - ${{ matrix.os }}
 
@@ -61,3 +64,38 @@ jobs:
 
       - name: Execute tests
         run: vendor/bin/pest --ci
+
+  stress-remote:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.4
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo
+          coverage: none
+
+      - name: Install dependencies
+        run: composer update --prefer-stable --prefer-dist --no-interaction
+
+      - name: Run Stress suite against memory backend
+        run: vendor/bin/pest tests/Stress
+
+      - name: Write Turso credentials file
+        if: ${{ secrets.STRESS_TURSO_URL != '' && secrets.STRESS_TURSO_TOKEN != '' }}
+        run: |
+          printf 'STRESS_TURSO_URL=%s\nSTRESS_TURSO_TOKEN=%s\n' \
+            "${{ secrets.STRESS_TURSO_URL }}" \
+            "${{ secrets.STRESS_TURSO_TOKEN }}" \
+            > .stress-creds.env
+
+      - name: Run Stress suite against remote Turso backend
+        if: ${{ secrets.STRESS_TURSO_URL != '' && secrets.STRESS_TURSO_TOKEN != '' }}
+        run: |
+          set -a; source .stress-creds.env; set +a
+          LIBSQL_TEST_BACKEND=remote vendor/bin/pest tests/Stress

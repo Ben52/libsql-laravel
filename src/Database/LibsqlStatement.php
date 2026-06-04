@@ -199,7 +199,11 @@ class LibsqlStatement
     {
         $parameters = collect(array_values($parameters))->map(function ($value) {
             $type = match (true) {
-                is_string($value) && (!ctype_print($value) || !mb_check_encoding($value, 'UTF-8')) => 'blob',
+                // An empty string is valid printable text, but ctype_print('')
+                // returns false, which misclassified it as a blob -> new Blob('')
+                // -> a zero-length blob underflows to SIZE_MAX in the native FFI
+                // and aborts the process. Guard against empty strings here.
+                is_string($value) && $value !== '' && (!ctype_print($value) || !mb_check_encoding($value, 'UTF-8')) => 'blob',
                 is_float($value) || is_float($value) => 'float',
                 is_int($value) => 'integer',
                 is_bool($value) => 'boolean',

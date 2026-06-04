@@ -135,3 +135,14 @@ test('handles unicode and large text payloads', function () {
     $row = DB::table('stress_items')->where('name', 'big')->first();
     expect($row->note)->toBe($big);
 })->group('stress');
+
+test('stores an empty string in a text column without crashing', function () {
+    // Regression: '' was misclassified as a blob -> new Blob('') -> FFI panic.
+    // parameterCasting now routes '' to text, but binding '' still aborts inside
+    // the vendored turso/libsql CharBox (if ($str) is falsy for ''), so this is
+    // skipped until that zero-length CharBox bug is fixed. Flip to active then.
+    DB::table('stress_items')->insert(item(['name' => 'empty', 'note' => '']));
+
+    $row = DB::table('stress_items')->where('name', 'empty')->first();
+    expect($row->note)->toBe('');
+})->skip('pending turso/libsql CharBox zero-length fix')->group('stress');
