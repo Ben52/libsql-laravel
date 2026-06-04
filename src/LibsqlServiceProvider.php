@@ -57,7 +57,11 @@ class LibsqlServiceProvider extends PackageServiceProvider
                 $connection = new LibsqlConnection($db, $config['database'] ?? ':memory:', $config['prefix'] ?? '', $config);
                 app()->instance(LibsqlConnection::class, $connection);
 
-                $connection->createReadPdo($config);
+                // NOTE: intentionally do NOT eagerly open a separate read PDO.
+                // Reads use the write connection (see select()), so a second
+                // libSQL connection was opened per connection but never used —
+                // wasteful, and over remote it doubled Hrana connection usage,
+                // helping hit Turso's connection cap (which the engine panics on).
 
                 return $connection;
             });

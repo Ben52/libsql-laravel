@@ -27,6 +27,12 @@ class StressTestCase extends Orchestra
         Factory::guessFactoryNamesUsing(
             fn (string $modelName) => 'Libsql\\Laravel\\Tests\\Fixtures\\Factories\\'.class_basename($modelName).'Factory'
         );
+
+        if (getenv('STRESS_TRACE_SQL')) {
+            \Illuminate\Support\Facades\DB::beforeExecuting(function ($q) {
+                fwrite(STDERR, '>>> '.$q.PHP_EOL);
+            });
+        }
     }
 
     protected function getPackageProviders($app)
