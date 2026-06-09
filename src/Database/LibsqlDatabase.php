@@ -91,6 +91,30 @@ class LibsqlDatabase
         return '3.45.1';
     }
 
+    /**
+     * Answer PDO attribute queries.
+     *
+     * LibsqlDatabase stands in for a PDO instance, so framework code that
+     * probes the underlying connection (e.g. the database queue driver's
+     * getLockForPopping(), which reads ATTR_DRIVER_NAME / ATTR_SERVER_VERSION)
+     * calls getAttribute() on it. libSQL is SQLite-compatible, so we report the
+     * sqlite driver and our SQLite version.
+     *
+     * @param  int  $attribute  One of the PDO::ATTR_* constants.
+     * @return mixed
+     */
+    public function getAttribute(int $attribute)
+    {
+        return match ($attribute) {
+            \PDO::ATTR_DRIVER_NAME => 'sqlite',
+            \PDO::ATTR_SERVER_VERSION, \PDO::ATTR_CLIENT_VERSION => $this->version(),
+            // Attributes we don't model report null ("unknown") rather than a
+            // concrete value, so callers degrade gracefully instead of acting on
+            // a value the engine never reported.
+            default => null,
+        };
+    }
+
     public function inTransaction(): bool
     {
         return $this->in_transaction;
