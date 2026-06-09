@@ -128,6 +128,24 @@ class LibsqlConnection extends Connection
         };
     }
 
+    /**
+     * Run a select statement and return a generator over the result rows.
+     *
+     * The base Connection::cursor() routes the prepared statement through
+     * prepared(\PDOStatement $statement), but LibsqlStatement is a PDO
+     * look-alike, not a real PDOStatement, so that path throws a TypeError.
+     * We delegate to this adapter's own select() — which already bypasses
+     * prepared() and centralises row shaping — so cursor() yields rows in the
+     * same shape as get(). (libSQL materialises results internally, so there is
+     * no row-by-row streaming primitive being given up here.)
+     */
+    public function cursor($query, $bindings = [], $useReadPdo = true, array $fetchUsing = [])
+    {
+        foreach ($this->select($query, $bindings, $useReadPdo, $fetchUsing) as $record) {
+            yield $record;
+        }
+    }
+
     public function insert($query, $bindings = []): bool
     {
         return $this->affectingStatement($query, $bindings) > 0;
