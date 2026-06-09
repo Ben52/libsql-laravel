@@ -69,6 +69,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
+    # The `secrets` context is not available in step-level `if:` expressions,
+    # so surface the credentials as env vars and gate the remote steps on those.
+    env:
+      STRESS_TURSO_URL: ${{ secrets.STRESS_TURSO_URL }}
+      STRESS_TURSO_TOKEN: ${{ secrets.STRESS_TURSO_TOKEN }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -87,7 +93,7 @@ jobs:
         run: vendor/bin/pest tests/Stress
 
       - name: Write Turso credentials file
-        if: ${{ secrets.STRESS_TURSO_URL != '' && secrets.STRESS_TURSO_TOKEN != '' }}
+        if: ${{ env.STRESS_TURSO_URL != '' && env.STRESS_TURSO_TOKEN != '' }}
         run: |
           printf 'STRESS_TURSO_URL=%s\nSTRESS_TURSO_TOKEN=%s\n' \
             "${{ secrets.STRESS_TURSO_URL }}" \
@@ -95,7 +101,7 @@ jobs:
             > .stress-creds.env
 
       - name: Run Stress suite against remote Turso backend
-        if: ${{ secrets.STRESS_TURSO_URL != '' && secrets.STRESS_TURSO_TOKEN != '' }}
+        if: ${{ env.STRESS_TURSO_URL != '' && env.STRESS_TURSO_TOKEN != '' }}
         run: |
           set -a; source .stress-creds.env; set +a
           LIBSQL_TEST_BACKEND=remote vendor/bin/pest tests/Stress
